@@ -5,7 +5,7 @@ import sseclient
 def stream_wikipedia():
     url = 'https://stream.wikimedia.org/v2/stream/recentchange'
     
-    # El User-Agent es CLAVE para que no te den el error 403
+    # El User-Agent es CLAVE para que no de el error 403
     headers = {
         'User-Agent': 'SBD_Analisis_Raul/1.0 (ProyectoEstudiante; contacto: raul@ejemplo.com)'
     }
