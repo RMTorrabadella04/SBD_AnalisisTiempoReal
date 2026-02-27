@@ -7,7 +7,7 @@ def stream_wikipedia():
     
     # El User-Agent es CLAVE para que no de el error 403
     headers = {
-        'User-Agent': 'SBD_Analisis_Raul/1.0 (ProyectoEstudiante; contacto: raul@ejemplo.com)'
+        'User-Agent': 'SBD_Analisis/1.0 (ProyectoEstudiante; contacto: estudiante@ejemplo.com)'
     }
 
     print("--- Intentando conectar con el servidor de Wikimedia ---")
