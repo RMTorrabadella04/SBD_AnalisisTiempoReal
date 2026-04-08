@@ -1,0 +1,54 @@
+## Visualización de datos en tiempo real de Wikipedia mediante un Dashboard Local con Streamlit
+
+Anteriormente desarrollamos una app de terminal, mediante la cual usando la API **[EventStreams (de Wikipedia)](https://wikitech.wikimedia.org/wiki/Event_Platform/EventStreams_HTTP_Service)**, podemos ver los cambios que se vayan haciendo dentro de Wikipedia.
+
+Más tecnicamente funciona usando tecnología que esta basada en el protocolo **Server-Sent Events (SSE)**, recibiendo un flujo continuo de datos en tiempo real. Concretamente recibe objetos JSON con metadatos detallados de la página de Wikipedia que haya recibido un cambio.
+
+```
+import json
+import requests
+import sseclient
+
+def stream_wikipedia():
+    url = 'https://stream.wikimedia.org/v2/stream/recentchange'
+  
+    # El User-Agent es CLAVE para que no de el error 403
+    headers = {
+        'User-Agent': 'SBD_Analisis/1.0 (ProyectoEstudiante; contacto: estudiante@ejemplo.com)'
+    }
+
+    print("--- Intentando conectar con el servidor de Wikimedia ---")
+  
+    try:
+        # stream=True permite leer los datos mientras llegan
+        response = requests.get(url, headers=headers, stream=True, timeout=10)
+        client = sseclient.SSEClient(response)
+
+        print("--- ¡CONECTADO! Escuchando cambios en la Wikipedia en español... ---\n")
+
+        for event in client.events():
+            if event.event == 'message':
+                try:
+                    data = json.loads(event.data)
+                  
+                    # Filtramos por la Wikipedia en español
+                    if data.get('server_name') == 'es.wikipedia.org':
+                        user = data.get('user')
+                        title = data.get('title')
+                        print(f"-> [EDIT] {user} ha editado: {title}")
+              
+                except json.JSONDecodeError:
+                    continue
+
+    except requests.exceptions.ConnectionError:
+        print("Error: No se pudo conectar. Revisa tu internet.")
+    except KeyboardInterrupt:
+        print("\nPrograma detenido por el usuario.")
+
+if __name__ == "__main__":
+    stream_wikipedia()
+```
+
+---
+
+Ahora decidimos mejorarlo, añadiendole una interfaz a modo de Dashboard usando **Streamlit**.
