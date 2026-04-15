@@ -21,14 +21,26 @@ if 'bot' not in st.session_state:
 if 'user' not in st.session_state:
     st.session_state.user = 0
 
-if 'total' not in st.session_state:
-    st.session_state.total = 0
+servidores = {
+    "Español": "es.wikipedia.org",
+    "Inglés": "en.wikipedia.org",
+    "Francés": "fr.wikipedia.org",
+    "Alemán": "de.wikipedia.org",
+    "Italiano": "it.wikipedia.org",
+    "Portugués": "pt.wikipedia.org",
+    "Ruso": "ru.wikipedia.org",
+    "Japonés": "ja.wikipedia.org",
+    "Chino": "zh.wikipedia.org",
+    "Global": "commons.wikimedia.org"
+}
 
-col_titulo, col_bot, col_user, col_total = st.columns([4, 1, 1, 1])
+
+col_titulo, col_bot, col_user, col_total, col_country = st.columns([5, 1, 1, 1, 1])
 
 bot_placeholder = col_bot.empty()
 user_placeholder = col_user.empty()
 total_placeholder = col_total.empty()
+country_placeholder = col_country.empty()
 
 with col_titulo:
     st.title("Monitor de Datos en Tiempo Real: Cambios en Wikipedia")
@@ -42,11 +54,19 @@ with col_user:
 with col_total:
     total_placeholder.metric(label="📊 Total Ediciones", value=st.session_state.bot + st.session_state.user)
 
+with col_country:
+    seleccion = st.selectbox("Selecciona un servidor", list(servidores.keys()), index=0)
+    server_objetivo = servidores[seleccion]
+    country_placeholder.markdown(f"**Servidor:** {servidores[seleccion]}")
+    st.session_state.bot = 0
+    st.session_state.user = 0
+
 st.divider()
 
 metrica_col, tabla_col = st.columns([1, 3])
 count_placeholder = metrica_col.empty()
 table_placeholder = st.empty()
+
 
 
 # Inicializamos una lista en el estado de la sesión para guardar los cambios
@@ -72,7 +92,7 @@ def stream_wikipedia():
                 try:
                     data = json.loads(event.data)
                     
-                    if data.get('server_name') == 'es.wikipedia.org':
+                    if data.get('server_name') == server_objetivo:
                         # Extraemos la info
                         es_bot = data.get('bot')
                         
@@ -82,7 +102,7 @@ def stream_wikipedia():
                         else:
                             st.session_state.user += 1
                             bot="Usuario"
-                        
+                                                
                         nuevo_cambio = {
                             "Hora": datetime.now().strftime("%H:%M:%S"),
                             "Usuario": data.get('user'),
@@ -101,7 +121,22 @@ def stream_wikipedia():
                         
                         # Actualizar tabla de forma fluida
                         df = pd.DataFrame(st.session_state.lista_cambios)
-                        table_placeholder.table(df) # .table se ve más limpio para logs rápidos
+                        
+                        df_centrado = df.style.set_properties(**{'text-align': 'center'})
+                        
+                        table_placeholder.dataframe(
+                            df_centrado,
+                            column_config={
+                                "Imagen": st.column_config.ImageColumn(
+                                    "Vista Previa", help="Miniatura del archivo", width="medium"
+                                ),
+                                "Hora": st.column_config.TextColumn(width="small"),
+                                "Tipo": st.column_config.TextColumn(width="small"),
+                                "Es": st.column_config.TextColumn(width="small")
+                            },
+                            hide_index=True,
+                            width="stretch"
+                        )
 
                 except json.JSONDecodeError:
                     continue
