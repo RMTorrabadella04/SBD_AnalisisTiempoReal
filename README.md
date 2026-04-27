@@ -18,6 +18,7 @@ El flujo de datos se basa en el protocolo  **Server-Sent Events (SSE)** : el ser
 <p align="center">
   <img src="images/dashboard_local.png" alt="Wikipedia Live Stream Dashboard" width="90%"/>
 </p>
+
 ---
 
 ## 🗂️ Estructura del Proyecto
